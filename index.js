@@ -27,7 +27,7 @@ app.post('/api/shorturl', (req, res) => {
     const { original_url } = req.body;
 
     // Check if the URL is valid
-    const urlPattern = /^(http|https):\/\/www\..+\..+$/;
+    const urlPattern = /^(http):\/\/www\..+\..+$/;
     if (!urlPattern.test(original_url)) {
       res.json({ error: 'invalid url' });
       return;
