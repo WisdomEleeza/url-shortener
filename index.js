@@ -19,7 +19,7 @@ app.get('/api/hello', function(req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true });
+// mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true });
 
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
