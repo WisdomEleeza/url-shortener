@@ -55,7 +55,12 @@ app.get('/api/shorturl/:short_url', (req, res) => {
   const short_url = req.params.short_url;
   const original_url = urlDatabase[short_url];
 
-  
+  if (original_url) {
+    // Redirect to the original URL
+    res.redirect(original_url);
+  } else {
+    res.json({ error: 'short URL not found' });
+  }
 });
 
 /*
