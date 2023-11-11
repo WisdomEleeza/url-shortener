@@ -19,49 +19,40 @@ app.get('/api/hello', function(req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-const urlDatabase = {};
-let nextShortUrlId = 1;
+const urlDatabase = [];
+let counter = 1;
 
 app.post('/api/shorturl', (req, res) => {
-  try {
-    const { original_url } = req.body;
+  const originalUrl = req.body.url;
 
-    // Check if the URL is valid
-    const urlPattern = /^(http|https):\/\/www\..+\..+$/;
-    if (!urlPattern.test(original_url)) {
-      res.json({ error: 'invalid url' });
-      return;
-    }
-
-    // Generate a short URL
-    const short_url = nextShortUrlId;
-    nextShortUrlId++;
-
-    // Store the mapping in the database
-    urlDatabase[short_url] = original_url;
-
-    // Respond with the original and short URLs
-    res.json({
-      original_url: original_url,
-      short_url: short_url
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: 'internal server error' });
+  // Validate URL format
+  const urlRegex = /^(http|https):\/\/www\..+\..+$/;
+  if (!urlRegex.test(originalUrl)) {
+    return res.json({ error: 'invalid url' });
   }
+
+  // Generate short URL and store in database
+  const shortUrl = counter++;
+  urlDatabase.push({ originalUrl, shortUrl });
+
+  // Respond with JSON
+  res.json({ original_url: originalUrl, short_url: shortUrl });
 });
 
 app.get('/api/shorturl/:short_url', (req, res) => {
-  const short_url = req.params.short_url;
-  const original_url = urlDatabase[short_url];
+  const shortUrl = parseInt(req.params.short_url);
 
-  if (original_url) {
-    // Redirect to the original URL
-    res.redirect(original_url);
-  } else {
-    res.json({ error: 'short URL not found' });
+  // Look up short URL in the database
+  const entry = urlDatabase.find(entry => entry.shortUrl === shortUrl);
+
+  if (!entry) {
+    return res.json({ error: 'short url not found' });
   }
+
+  // Redirect to the original URL
+  res.redirect(entry.originalUrl);
 });
+
 
 
 
