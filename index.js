@@ -50,6 +50,14 @@ app.post('/api/shorturl', (req, res) => {
     res.status(500).json({ error: 'internal server error' });
   }
 });
+
+app.get('/api/shorturl/:short_url', (req, res) => {
+  const short_url = req.params.short_url;
+  const original_url = urlDatabase[short_url];
+
+  
+});
+
 /*
 * You can POST a URL to /api/shorturl and get a JSON response with original_url and short_url properties. 
   Here's an example: { original_url : 'https://freeCodeCamp.org', short_url : 1}
