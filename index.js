@@ -19,68 +19,45 @@ app.get('/api/hello', function(req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-const mongoose = require('mongoose')
+// In-memory database to store shortened URLs
+const urlDatabase = {};
+let counter = 1;
 
-mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true });
+// Endpoint to shorten a URL
+app.post('/api/shorturl', (req, res) => {
+  const originalUrl = req.body.original_url;
 
-var db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error:"));
-db.once("open", function() {
-  console.log("we're connected!");
-});
+  // Check if the URL is valid
+  if (!validUrl.isWebUri(originalUrl)) {
+    return res.json({ error: 'invalid url' });
+  }
 
-//Schema n Model
-var urlSchema = new mongoose.Schema({
-  id: Number,
-  url: String
-});
-
-var urlModel = mongoose.model("url", urlSchema);
-
-// your first API endpoint...
-app.get("/api/hello", function(req, res) {
-  res.json({ greeting: "hello API" });
-});
-
-app.post("/api/shorturl", function(req, res) {
-  let urlRegex = /https:\/\/www.|http:\/\/www./g;
+  // Create a short URL
+  const shortUrl = counter++;
   
-  dns.lookup(req.body.url.replace(urlRegex, ""), (err, address, family) => {
-    if (err) {
-      res.json({"error":"invalid URL"});
-    } else {
-      urlModel
-        .find()
-        .exec()
-        .then(data => {
-          new urlModel({
-            id: data.length + 1,
-            url: req.body.url
-          })
-            .save()
-            .then(() => {
-              res.json({
-                original_url: req.body.url,
-                short_url: data.length + 1
-              });
-            })
-            .catch(err => {
-              res.json(err);
-            });
-        });
-    }
+  // Save the original URL and short URL in the database
+  urlDatabase[shortUrl] = originalUrl;
+
+  // Send the JSON response
+  res.json({
+    original_url: originalUrl,
+    short_url: shortUrl
   });
 });
 
-app.get("/api/shorturl/:short_url", function(req, res) {
-  urlModel
-    .find({ id: req.params.number })
-    .exec()
-    .then(url => {
-      res.redirect(url[0]["url"]);
-    });
-});
+// Endpoint to redirect to the original URL
+app.get('/api/shorturl/:short_url', (req, res) => {
+  const shortUrl = parseInt(req.params.short_url);
 
+  // Check if the short URL exists in the database
+  if (urlDatabase.hasOwnProperty(shortUrl)) {
+    // Redirect to the original URL
+    return res.redirect(urlDatabase[shortUrl]);
+  } else {
+    // Short URL not found
+    return res.json({ error: 'short url not found' });
+  }
+});
 
 
 
