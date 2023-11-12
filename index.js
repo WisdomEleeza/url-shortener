@@ -28,38 +28,28 @@ let counter = 1;
 app.post('/api/shorturl', (req, res) => {
   const originalUrl = req.body.original_url;
 
-  // Check if the URL is valid
   if (!validUrl.isWebUri(originalUrl)) {
-    return res.json({ error: 'invalid url' });
+    return res.status(400).json({ error: 'invalid url' });
   }
 
-  // Create a short URL
   const shortUrl = counter++;
-  
-  // Save the original URL and short URL in the database
   urlDatabase[shortUrl] = originalUrl;
 
-  // Send the JSON response
   res.json({
     original_url: originalUrl,
     short_url: shortUrl
   });
 });
 
-// Endpoint to redirect to the original URL
 app.get('/api/shorturl/:short_url', (req, res) => {
   const shortUrl = parseInt(req.params.short_url);
 
-  // Check if the short URL exists in the database
   if (urlDatabase.hasOwnProperty(shortUrl)) {
-    // Redirect to the original URL
     return res.redirect(urlDatabase[shortUrl]);
   } else {
-    // Short URL not found
-    return res.json({ error: 'short url not found' });
+    return res.status(404).json({ error: 'short url not found' });
   }
 });
-
 
 
 
