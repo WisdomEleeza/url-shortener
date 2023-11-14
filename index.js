@@ -2,7 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { MongoClient  } = require('mongodb')
+const dns = require('dns')
+const urlparser = require('url')
+const { MongoClient  } = require('mongodb');
 
 const client = new MongoClient(process.env.DB_URL)
 const db = client.db('urlshortener')
@@ -23,10 +25,28 @@ app.get('/', function(req, res) {
 
 // Your first API endpoint
 app.post('/api/shorturl', function(req, res) {
-  // const { original_url } = req.body
-  console.log(req.body);
-  res.json({ greeting: 'hello API' });
+  const url = req.body.url
+  const dnslookup = dns.lookup(urlparser.parse(url).hostname, async(err, address) => {
+    if(!address) {
+      res.json({ error: 'invalid url'})
+    } else {
+      const urlCount = await urls.countDocuments({})
+      const urlDoc = {
+        url,
+        short_url: urlCount
+      }
+
+      const result = await urls.insertOne(urlDoc)
+      res.json({ original_url: url, short_url: urlCount})
+    }
+  })
 });
+
+app.get('/api/shorturl/:short_url', async (req, res) => {
+  const shortUrl = req.params.short_url
+  const urlDoc = await urls.findOne({ short_url: shortUrl})
+  res.redirect(urlDoc.url)
+})
 
 // // In-memory database to store shortened URLs
 // const urlDatabase = {};
