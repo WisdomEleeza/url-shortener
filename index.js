@@ -2,12 +2,18 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const { MongoClient  } = require('mongodb')
+
+const client = new MongoClient(process.env.DB_URL)
+const db = client.db('urlshortener')
+const urls = db.collection('urls')
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
 
 app.use(cors());
-const validUrl = require('valid-url');
+app.use(express.json())
+app.use(express.urlencoded({extended: true}))
 
 app.use('/public', express.static(`${process.cwd()}/public`));
 
@@ -16,41 +22,43 @@ app.get('/', function(req, res) {
 });
 
 // Your first API endpoint
-app.get('/api/hello', function(req, res) {
+app.post('/api/shorturl', function(req, res) {
+  // const { original_url } = req.body
+  console.log(req.body);
   res.json({ greeting: 'hello API' });
 });
 
-// In-memory database to store shortened URLs
-const urlDatabase = {};
-let counter = 1;
+// // In-memory database to store shortened URLs
+// const urlDatabase = {};
+// let counter = 1;
 
-// Endpoint to shorten a URL
-app.post('/api/shorturl', (req, res) => {
-  // const originalUrl = req.body.original_url;
-  const { originalUrl } = req.body
+// // Endpoint to shorten a URL
+// app.post('/api/shorturl', (req, res) => {
+//   // const originalUrl = req.body.original_url;
+//   const { originalUrl } = req.body
 
-  if (!validUrl.isWebUri(originalUrl)) {
-    return res.status(400).json({ error: 'invalid url' });
-  }
+//   if (!validUrl.isWebUri(originalUrl)) {
+//     return res.status(400).json({ error: 'invalid url' });
+//   }
 
-  const shortUrl = counter++;
-  urlDatabase[shortUrl] = originalUrl;
+//   const shortUrl = counter++;
+//   urlDatabase[shortUrl] = originalUrl;
 
-  res.json({
-    original_url: originalUrl,
-    short_url: shortUrl
-  });
-});
+//   res.json({
+//     original_url: originalUrl,
+//     short_url: shortUrl
+//   });
+// });
 
-app.get('/api/shorturl/:short_url', (req, res) => {
-  const shortUrl = parseInt(req.params.short_url);
+// app.get('/api/shorturl/:short_url', (req, res) => {
+//   const shortUrl = parseInt(req.params.short_url);
 
-  if (urlDatabase.hasOwnProperty(shortUrl)) {
-    return res.redirect(urlDatabase[shortUrl]);
-  } else {
-    return res.status(404).json({ error: 'short url not found' });
-  }
-});
+//   if (urlDatabase.hasOwnProperty(shortUrl)) {
+//     return res.redirect(urlDatabase[shortUrl]);
+//   } else {
+//     return res.status(404).json({ error: 'short url not found' });
+//   }
+// });
 
 
 /**
