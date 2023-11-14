@@ -55,11 +55,16 @@ connectToMongo().then(() => {
     });
   });
 
-  app.get('/api/shorturl/:short_url', async (req, res) => {
-    const shortUrl = req.params.short_url;
-    const urlDoc = await urls.findOne({ short_url: shortUrl });
+app.get('/api/shorturl/:short_url', async (req, res) => {
+  const shortUrl = req.params.short_url;
+  const urlDoc = await urls.findOne({ short_url: shortUrl });
+
+  if (urlDoc && urlDoc.url) {
     res.redirect(urlDoc.url);
-  });
+  } else {
+    res.status(404).json({ error: 'short url not found' });
+  }
+});
 
   // Start the server
   app.listen(port, function () {
