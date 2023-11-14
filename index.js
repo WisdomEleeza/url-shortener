@@ -6,9 +6,23 @@ const dns = require('dns')
 const urlparser = require('url')
 const { MongoClient  } = require('mongodb');
 
-const client = new MongoClient(process.env.DB_URL)
-const db = client.db('urlshortener')
-const urls = db.collection('urls')
+const client = new MongoClient(process.env.DB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Connect to MongoDB
+async function connectToMongo() {
+  try {
+    await client.connect();
+    console.log('Connected to MongoDB');
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+    process.exit(1);
+  }
+}
+
+connectToMongo(); // Call the function to connect to MongoDB
+
+const db = client.db('urlshortener');
+const urls = db.collection('urls');
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
