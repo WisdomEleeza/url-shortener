@@ -4,7 +4,7 @@
   "description": "API project for freeCodeCamp",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "babel-node index.js",
     "dev": "nodemon index.js"
   },
   "dependencies": {
@@ -18,6 +18,8 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.23.3",
+    "@babel/preset-env": "^7.23.3",
     "nodemon": "^2.0.4"
   }
 }
